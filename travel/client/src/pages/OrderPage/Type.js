@@ -22,9 +22,8 @@ function Type({ orderType }) {
     } catch (error) { 
       setError(true); 
     }
-  };
-
-  if (error) { //에러발생시 에러처리  
+  }
+  if (error) { 
     return <ErrorBanner message="에러가 발생했습니다." />;
   }
 
