@@ -8,7 +8,7 @@ function App() {
   const [step, setStep] = useState(0);
   return (
     <div style={{ padding: "4rem" }}>
-      <OrderContextProvider>
+      <OrderContextProvider> 
         {step === 0 && <OrderPage setStep={setStep} />}
         {step === 1 && <SummaryPage setStep={setStep} />}
         {step === 2 && <CompletePage setStep={setStep} />}
@@ -18,3 +18,5 @@ function App() {
 }
 
 export default App;
+
+//provider로 감싸야 각 컴포넌트에서 데이터,데이터업데이트함수를 사용가능함

@@ -7,14 +7,14 @@ import OrderPage from "../OrderPage";
 test.only("update product's total when products change", async () => {
   render(<Type orderType="products" />);
 
-  const productsTotal = screen.getByText("상품 총 가격:", { exact: false }); //정확이 "상품 총 가격:" 문자열을 잡는게 아니므로 exact: false
-  expect(productsTotal).toHaveTextContent("0");
+  const productsTotal = screen.getByText("상품 총 가격:", { exact: false }); //정확이 "상품 총 가격:" 문자열을 잡는게 아니므로 exact: false(뒤에 문자열 더있음)
+  expect(productsTotal).toHaveTextContent("0"); //여행상품이 선택되기전이니 0 (초기값)
 
   // 아메리카 여행 상품 한개 올리기
   const americaInput = await screen.findByRole("spinbutton", {//getby 대신 findby인 이유는 서버에서 데이터를 가져온후 엘레멘트를 가질수있기 떄문에
     name: "America",
   });
-  userEvent.clear(americaInput); //타입을주기전에 1번 clear해줌: input이나,textarea 선택한후 제거해줌
+  userEvent.clear(americaInput); //타입을주기전에 1번 clear해줌: input이나,textarea 선택한후 제거해줌(가급적이면 추천)
   userEvent.type(americaInput, "1");
 
   console.log('use', productsTotal.textContent);
