@@ -17,14 +17,14 @@ function Type({ orderType }) {
 
   const loadItems = async (orderType) => {
     try {
-      let response = await axios.get(`http://localhost:5000/${orderType}`);
-      setItems(response.data);
+      let response = await axios.get(`http://localhost:5000/${orderType}`); //msw get request 
+      setItems(response.data); //msw response data
     } catch (error) { 
       setError(true); 
     }
   }
   if (error) { 
-    return <ErrorBanner message="에러가 발생했습니다." />;
+    return <ErrorBanner message="에러가 발생했습니다." />; //서버에서 데이터 가져올떄 에러발생시 에러처리 테스트
   }
 
   const ItemComponents = orderType === "products" ? Products : Options;
