@@ -13,7 +13,7 @@ function calculateSubtotal(orderType, orderCounts) { //타입에따라 총가격
   for (const count of orderCounts[orderType].values()) { //["america",10],["england",12]  일경우 optionCount = 22 
     optionCount += count;
   }
-  return optionCount * pricePerItem[orderType]; 
+  return optionCount * pricePerItem[orderType];   
 }
 
 
@@ -38,17 +38,15 @@ export function OrderContextProvider(props) { //더 복잡한 로직을 구현�
       options: optionsTotal,
       total,
     });
-  }, [orderCounts]);
+  }, [orderCounts]); 
 
 
   const value = useMemo(() => { //value 바뀌면 provider안에있는 모든컴포넌트가 랜더링을 다시함->성능상 안좋음
     
     function updateItemCount(itemName, newItemCount, orderType) {//상품 수량 업데이트함수//상품이름(product,option),상품갯수,상품종류 
       const newOrderCounts = { ...orderCounts };
-
       const orderCountsMap = orderCounts[orderType]; //product or option
       orderCountsMap.set(itemName, parseInt(newItemCount)); //set을 이용해 map을 업데이트 (상품이름,상품수량)
-
       setOrderCounts(newOrderCounts);
     }
 
@@ -59,7 +57,7 @@ export function OrderContextProvider(props) { //더 복잡한 로직을 구현�
       });
     };
 
-    return [{ ...orderCounts, totals }, updateItemCount, resetOrderDatas]; //주문갯수(상품,옵션) , 전체가격
+    return [{ ...orderCounts, totals }, updateItemCount, resetOrderDatas]; //{주문갯수(상품,옵션) , 전체가격},상품 업데이트함수
   }, [orderCounts, totals]); //dependency가 변할때만 함수작동
   
 
