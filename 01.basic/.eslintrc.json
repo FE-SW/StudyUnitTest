@@ -3,7 +3,7 @@
         "testing-library",
         "jest-dom"
     ],
-    "extends": [
+    "extends": [ //플러그인 설치후 규칙을 정하는 부분
         "react-app",
         "react-app/jest",
         "plugin:testing-library/react",
