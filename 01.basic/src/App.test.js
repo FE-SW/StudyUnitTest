@@ -2,17 +2,13 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import App from './App';
 
 
-test('the counter starts at 0', () => {
+test('the counter starts at 0', () => { //test:jest 개별테스트 수행 <-> 그룹화:describe
   render(<App />);//render = dom의 컴포넌트를 렌더하는 함수(인자로 react컴포넌트가 들어감)
-  const counterElement = screen.getByTestId("counter")//screen object를 이용해서 원하는 element에 접근 (id로 접근)
-  expect(counterElement).toHaveTextContent(0)  //id가 counter인 element인 텍스트가 0인지 테스트
-});
-
-//플러스 버튼 테스트
-test("plus button has correct text", () => {
-  render(<App />);
-  const plusButtonElement = screen.getByTestId("plus-button");
-  expect(plusButtonElement).toHaveTextContent("+");
+  
+  const counterElement = screen.getByTestId("counter")//screen = 원하는 element에 접근해주는 객체 //getByTestId(query함수)=요소를 찾기위한 방법//
+  
+  expect(counterElement).toHaveTextContent(0)  //jest의 expect와 matcher //test id가 counter인 요소를 찾아서 해당text 0 예측
+                                               //counterElement = <h3 data-testid="counter">{counter}</h3> //toBe는 counterElement와 같음 toHaveTextContent사용
 });
 
 //마이너스 버튼 테스트
@@ -21,10 +17,15 @@ test("minus button has correct text", () => {
   const minusButtonElement = screen.getByTestId("minus-button");
   expect(minusButtonElement).toHaveTextContent("-");
 });
+//플러스 버튼 테스트
+test("plus button has correct text", () => {
+  render(<App />);
+  const plusButtonElement = screen.getByTestId("plus-button");
+  expect(plusButtonElement).toHaveTextContent("+");
+});
 
 
-
-//유저가 발생시키는 액션이벤트에 대한 테스트는 fireEvent(react testing library)으로 진행
+//유저가 발생시키는 액션이벤트에 대한 테스트는 fireEvent으로 진행
 //플러스 버튼 클릭스 count증가 했나 테스트
 test("When the + button is pressed, the counter changes to 1", () => {
   render(<App />);
@@ -64,4 +65,8 @@ test("Prevent the -,+ button from being pressed when the on/off button is clieck
 
 //test.only = 따른테스트케이스 제외하고 이것만 테스트
 //test.skip = 해당테스트만 제외하고 테스트
+
 //https://testing-library.com/docs/queries/about/#priority 쿼리우선순위
+//https://github.com/testing-library/react-testing-library
+//https://jestjs.io/docs/getting-started
+//https://github.com/facebook/jest

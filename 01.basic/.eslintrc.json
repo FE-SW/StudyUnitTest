@@ -3,10 +3,11 @@
         "testing-library",
         "jest-dom"
     ],
-    "extends": [ //플러그인 설치후 규칙을 정하는 부분
+    "extends": [ //플러그인 설치후 규칙을 정하는 부분,규칙을 변경하는 경우 rule항목 추가
         "react-app",
         "react-app/jest",
         "plugin:testing-library/react",
         "plugin:jest-dom/recommended"
     ]
+    //"rules":[]
 }
