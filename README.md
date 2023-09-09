@@ -148,6 +148,7 @@ test('단순 산술 테스트', () => {
 React Testing Library는 컴포넌트를 렌더링하고 사용자처럼 상호 작용한다(클릭 등).<br/>
 Jest는 테스트 케이스와 단언을 정의하고, 그러한 상호 작용의 결과를 확인하는데 사용된다
 
+<br/>
 
 ## 참고
 * https://testing-library.com/docs/
