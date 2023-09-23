@@ -138,7 +138,147 @@ test('단순 산술 테스트', () => {
 React Testing Library는 컴포넌트를 렌더링하고 사용자처럼 상호 작용한다(클릭 등).<br/>
 Jest는 테스트 케이스와 단언을 정의하고, 그러한 상호 작용의 결과를 확인하는데 사용된다
 
+## Mocking API Test
+
+Mocking API 테스트는 실제 백엔드 API를 가짜(mock) API로 대체하여 프론트엔드나 클라이언트 코드를 테스트하는 방법이다.
+이런 방식은 API 응답의 형태나 동작을 정확히 알고 있는 상황에서, 프론트엔드의 동작을 검증하거나 UI 개발할때 많이 사용한다.
+Mocking 테스트의 장점은 다음으로 요약할 수 있다.
+
+
+* 비용 및 시간 절약:<br/>
+실제 서버와 통신할 필요가 없기 때문에 테스트 속도가 빨라진다. 이로 인해 테스트 실행 비용과 시간을 절약할 수 있다.
+
+* 시뮬레이션:<br/>
+특정한 API 응답을 조작하여 예상치 못한 상황이나 오류 상황, 그리고 다양한 엣지 케이스를 쉽게 시뮬레이션 할 수 있다.
+
+* 백엔드와의 독립성:<br/>
+백엔드와 독립적으로 프론트엔드는 Mocking API를 통해 독립적으로 테스트와 개발을 진행할 수 있습니다.
+
+
+## MSW
+![react-msw-01](https://github.com/FE-SW/StudyUnitTest/assets/54196723/59f74079-c3ad-4068-aec2-f63fe98c80b1)
+MSW (Mock Service Worker)는 브라우저와 Node.js 환경에서 API 목킹을 가능하게 하는 라이브러리이다. 실제 네트워크 요청을 가로채어 사용자가 정의한 응답을 반환하는 방식으로 동작한다.
+API 통신 과정이 필요한 프론트엔드 개발과정에서 백엔드 의존성 없이 실제 요청과 유사한 모킹작업으로 프론트엔드를 테스트하거나 개발할 수 있다.
+
+## 2가지 방법
+
+MSW를 이용해 Mocking 테스트 하는 방법은 크게 2가지로 나뉘는데 바로 브라우저 통합 방식과 노드와 통합 방식이다.
+각 방식의 차이점은 다음과 같다.
+
+## [브라우저 통합]
+브라우저와 통합 방식은 MSW(Mock Service Worker)를 사용하여 개발 환경의 브라우저 내에서 실제 네트워크 요청을 가로채고, 미리 정의된 응답을 반환하는 방법이다. 이를 통해 백엔드 서버 없이도 API 응답을 모방하여 프론트엔드 개발과 테스팅을 진행할 수 있다. <br/>
+
+해당 방식의 단계는 다음과 같다.
+
+### 1.핸들러 작성
+핸들러 작성은 MSW를 사용하여 API 요청의 특정 경로와 메서드에 대한 가상의 응답을 정의하는 과정이다. 이 핸들러는 rest 객체의 메서드 (get, post, put 등)를 사용하여 요청 경로와 콜백 함수를 연결하여 작성된다. 콜백 함수 내에서는 가상의 응답 데이터와 상태 코드를 반환할 수 있다. 이렇게 정의된 핸들러는 후속 단계에서 서비스 워커에 등록되어 실제 네트워크 요청을 가로채는 데 사용된다.
+
+```javascript
+// src/mocks/handlers.js
+import { rest } from 'msw';
+
+export const handlers = [
+  rest.get('https://api.example.com/user', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        id: 1,
+        name: 'Raphael',
+      })
+    );
+  }),
+];
+```
+
+### 2.서비스워커 생성
+서비스워커 생성은 MSW가 제공하는 setupWorker 함수를 사용하여 앞서 정의한 핸들러들을 바탕으로 서비스 워커 인스턴스를 생성하는 과정이다. 이 생성된 서비스 워커는 브라우저에서 동작하며, 웹 애플리케이션과 네트워크 사이에서 중간자 역할을 하여 API 요청을 가로채고 핸들러에 정의된 가상의 응답을 반환한다. 생성 후에는 브라우저에 등록후 start 메서드를 호출하여 서비스 워커를 활성화해야 동작한다.
+
+```javascript
+// src/mocks/browser.js
+import { setupWorker } from 'msw';
+import { handlers } from './handlers';
+
+export const worker = setupWorker(...handlers);
+```
+
+### 3.생성한 서비스 워커 브라우저에 등록
+생성한 서비스 워커 브라우저에 등록은 MSW의 start 함수를 호출하는 단계입이다. 이 함수는 내부적으로 서비스 워커를 브라우저에 등록하고, 해당 서비스 워커가 웹 애플리케이션의 네트워크 요청을 가로챌 수 있게 설정한다. 등록 후, 서비스 워커는 브라우저 내에서 백그라운드에서 동작하며, 정의된 핸들러를 사용해 요청에 대한 모의 응답을 제공한다.
+
+```javascript
+// src/mocks/browser.js
+import { setupWorker } from 'msw';
+import { handlers } from './handlers';
+
+export const worker = setupWorker(...handlers);
+```
+
+## [노드와 통합(Jest 테스트 환경)]
+노드와 통합은 서버 측 환경에서 MSW를 사용하여 API를 모킹하는 방법을 의미한다. Jest와 같은 테스트 러너를 사용하여 테스트를 실행할 때 MSW는 실제 API 호출 대신 모킹된 응답을 반환하여, 실제 서버 없이 API와의 상호작용을 테스트할 수 있게 한다. <br/>
+
+해당 방식의 단계는 다음과 같다.
+
+### 1.핸들러 작성
+핸들러 작성은 MSW를 사용하여 API 요청의 특정 경로와 메서드에 대한 가상의 응답을 정의하는 과정이다. 이 핸들러는 rest 객체의 메서드 (get, post, put 등)를 사용하여 요청 경로와 콜백 함수를 연결하여 작성된다. 콜백 함수 내에서는 가상의 응답 데이터와 상태 코드를 반환할 수 있다. 이렇게 정의된 핸들러는 후속 단계에서 서비스 워커에 등록되어 실제 네트워크 요청을 가로채는 데 사용된다.
+
+```javascript
+// src/mocks/handlers.js
+import { rest } from 'msw';
+
+export const handlers = [
+  rest.get('https://api.example.com/user', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        id: 1,
+        name: 'Raphael',
+      })
+    );
+  }),
+];
+```
+
+### 2.서버 생성
+서버 생성은 MSW의 setupServer 함수를 사용하여 테스트용 서버를 초기화하는 것을 포함하여 이전에 작성한 API 핸들러를 이 서버에 연결하게 된다. 그리고 테스트를 시작하기 전에 서버를 활성화하며 (listen 메서드 호출), 테스트가 종료된 후에는 서버를 비활성화(close 메서드 호출)하여 리소스를 정리한니다.
+
+```javascript
+// src/mocks/server.js
+import { setupServer } from 'msw/node';
+import { handlers } from './handlers';
+
+export const server = setupServer(...handlers);
+```
+
+### 3.API mocking 설정
+MSW를 사용하여 API mocking을 설정하고 관리하기 위한 Jest 테스트 라이프사이클 훅을 사용한다. 
+* beforeAll: 테스트 시작 전에 가상 서버를 활성화(listen) 한다.
+* afterEach: 각 테스트 후에는 설정된 핸들러를 초기화(resetHandlers)하여 다음 테스트에 영향을 주지 않게 한다.
+* afterAll: 모든 테스트가 완료된 후에는 서버를 비활성화(close)하여 리소스를 정리한다.
+
+```javascript
+// src/setupTests.js
+import { server } from './mocks/server';
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+```
+
+### 요약 
+#### 브라우저 통합:
+1.핸들러 작성: 원하는 API 요청에 대한 응답을 정의
+2.서비스 워커 생성: MSW 라이브러리를 사용하여 mock 서비스 워커를 생성
+3.브라우저 등록: 생성된 서비스 워커를 브라우저에 등록하여, 실제 API 요청 대신 모킹된 응답을 사용하도록 설정
+4.동작 확인: 웹 애플리케이션을 브라우저에서 실행하여 모킹된 API 응답이 잘 동작하는지 확인
+
+#### 노드 통합:
+1.핸들러 작성: 원하는 API 요청에 대한 응답을 정의
+2.서버 생성: MSW를 사용하여 가상의 서버를 생성
+3.API 모킹 설정: 가상 서버를 활성화(listen)하고, 테스트 후 핸들러를 초기화(resetHandlers), 모든 테스트가 완료된 후에는 서버를 비활성화(close)
+4.테스트 실행: Jest를 사용하여 테스트를 실행하며, 실제 API 대신 모킹된 응답을 사용하여 테스트한다.
+
+
 ## 참고
 * https://testing-library.com/docs/
 * https://jestjs.io/docs/getting-started#using-typescript
 * https://techblog.woowahan.com/8942/
+* https://mswjs.io/docs/
+* https://blog.mathpresso.com/msw%EB%A1%9C-api-%EB%AA%A8%ED%82%B9%ED%95%98%EA%B8%B0-2d8a803c3d5c
