@@ -275,6 +275,74 @@ afterAll(() => server.close());
 3.API 모킹 설정: 가상 서버를 활성화(listen)하고, 테스트 후 핸들러를 초기화(resetHandlers), 모든 테스트가 완료된 후에는 서버를 비활성화(close) <br/>
 4.테스트 실행: Jest를 사용하여 테스트를 실행하며, 실제 API 대신 모킹된 응답을 사용하여 테스트
 
+## MSW 이용한 유닛 테스트
+
+MSW를 활용하여 가상 서버를 세팅하고, API 모킹을 통해 리액트 컴포넌트의 랜더링 전과 후 상황을 테스트하는 코드는 아래와 같다
+
+```javascript
+// Posts.js
+import React, { useEffect, useState } from 'react';
+
+function Posts() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/posts')
+      .then((response) => response.json())
+      .then((data) => setPosts(data));
+  }, []);
+
+  return (
+    <div>
+      {posts.map((post) => (
+        <div key={post.id}>{post.title}</div>
+      ))}
+    </div>
+  );
+}
+
+export default Posts;
+```
+
+```javascript
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { setupServer } from 'msw/node';
+import { rest } from 'msw';
+import Posts from './Posts';
+
+const mockPosts = [
+  { id: 1, title: 'Post 1' },
+  { id: 2, title: 'Post 2' },
+];
+
+const server = setupServer(
+  rest.get('http://localhost:5000/posts', (req, res, ctx) => {
+    return res(ctx.json(mockPosts));
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+test('renders posts', async () => {
+  render(<Posts />);
+  
+  // 초기에는 해당 포스트가 화면에 없는거 검증
+  expect(screen.queryByText('Post 1')).toBeNull();
+  expect(screen.queryByText('Post 2')).toBeNull();
+  
+  // API 응답 후에 해당 포스트가 화면에 있는거 검증
+  await waitFor(() => expect(screen.getByText('Post 1')).toBeInTheDocument());
+  expect(screen.getByText('Post 2')).toBeInTheDocument();
+});
+
+```
+
+* waitFor:
+비동기적인 DOM 업데이트를 기다리기 위해 사용되는 RTL의 유틸리티 함수이다. 이 함수는 주어진 콜백이 에러 없이 실행될 때까지 기다리며, 주로 비동기적인 UI 업데이트를 테스트할 때 사용된다.
+
 
 ## 참고
 * https://testing-library.com/docs/
