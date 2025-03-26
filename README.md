@@ -201,14 +201,20 @@ export const worker = setupWorker(...handlers);
 ```
 
 ### 3.생성한 서비스 워커 브라우저에 등록
-생성한 서비스 워커 브라우저에 등록은 MSW의 start 함수를 호출하는 단계입이다. 이 함수는 내부적으로 서비스 워커를 브라우저에 등록하고, 해당 서비스 워커가 웹 애플리케이션의 네트워크 요청을 가로챌 수 있게 설정한다. 등록 후, 서비스 워커는 브라우저 내에서 백그라운드에서 동작하며, 정의된 핸들러를 사용해 요청에 대한 모의 응답을 제공한다.
+생성한 서비스 워커 브라우저에 등록은 MSW의 start 함수를 호출하는 단계이다. 이 함수는 내부적으로 서비스 워커를 브라우저에 등록하고, 해당 서비스 워커가 웹 애플리케이션의 네트워크 요청을 가로챌 수 있게 설정한다. 등록 후, 서비스 워커는 브라우저 내에서 백그라운드에서 동작하며, 정의된 핸들러를 사용해 요청에 대한 모의 응답을 제공한다.
 
 ```javascript
-// src/mocks/browser.js
-import { setupWorker } from 'msw';
-import { handlers } from './handlers';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import { worker } from './mocks/browser';
 
-export const worker = setupWorker(...handlers);
+// Start the service worker
+if (process.env.NODE_ENV === 'development') {
+  worker.start();
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
 ```
 
 ## [노드와 통합(Jest 테스트 환경)]
